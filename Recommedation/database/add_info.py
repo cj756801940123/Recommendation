@@ -23,7 +23,7 @@ def update_rate(file_path):
             # 提交到数据库执行
             db.commit()
     except Exception as err:
-        print("fail to update database,err:" + str(err))
+        print("fail to update_files database,err:" + str(err))
     finally:
         file.close()
         db.close()  # 关闭连接
@@ -47,7 +47,7 @@ def update_shop_info(file_path):
             cur.execute(sql)  # 执行sql语句
             db.commit()  # 提交到数据库执行
     except Exception as err:
-        print("fail to update database,err:" + str(err))
+        print("fail to update_files database,err:" + str(err))
     finally:
         file.close()
         db.close()  # 关闭连接

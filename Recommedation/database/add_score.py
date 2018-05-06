@@ -16,13 +16,13 @@ def update_rate(file_path):
             line[3] = int(line[3].split(']')[0])
             print(count, line)
             count += 1
-            sql = "update cellphones set comment_count=%d, good_rate=%f ,poor_rate=%f where number='%s'" % (
+            sql = "update_files cellphones set comment_count=%d, good_rate=%f ,poor_rate=%f where number='%s'" % (
             int(line[3]), float(line[1]), float(line[2]), line[0])
             cur.execute(sql)  # 执行sql语句
             # 提交到数据库执行
             db.commit()
     except Exception as err:
-        print("fail to update database,err:" + str(err))
+        print("fail to update_files database,err:" + str(err))
     finally:
         file.close()
         db.close()  # 关闭连接
@@ -38,7 +38,7 @@ def update_score(file_path):
             sku = line[0]
             print(count, line)
             count += 1
-            sql = "update cellphones set screen =%f, speed=%f,touch=%f,appearance =%f, battery=%f," \
+            sql = "update_files cellphones set screen =%f, speed=%f,touch=%f,appearance =%f, battery=%f," \
             "cost_effective =%f, delivery =%f,camera=%f,fingerprint=%f, experience=%f," \
             "effect =%f, screen =%f,quality=%f,genuine=%f,accessory =%f, " \
             "storage=%f,similarity=%f where number='%s'" %(
@@ -51,7 +51,7 @@ def update_score(file_path):
             db.commit()  # 提交到数据库执行
 
     except Exception as err:
-        print("fail to update database,err:" + str(err))
+        print("fail to update_files database,err:" + str(err))
     finally:
         file.close()
         db.close()  # 关闭连接
