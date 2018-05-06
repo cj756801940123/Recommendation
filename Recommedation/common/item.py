@@ -10,7 +10,17 @@ class Item(object):
         self.name = ''                  #商品名字，比如oppor11
         self.number = ''                #varchar(30) NULL COMMENT商品编号，比如1458853
         self.get_time = ''
-
+        self.comment_count = 0
+        self.good_rate = 0
+        self.poor_rate = 0
+        self.shop_id = ''
+        self.shop_name = ''
+        self.follow_count = ''
+        self.rate = 0
+        self.max_price = 0
+        self.min_price = 0
+        self.avg_price = 0
+        self.price_times = 0
 
 def getItem():
     item = Item()

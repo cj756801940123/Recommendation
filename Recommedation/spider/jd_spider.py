@@ -6,12 +6,13 @@ import re
 import requests
 import urllib
 import urllib.request
+from Recommedation.spider import proxy_ip
 import chardet
 import jieba
 import random
 import os
-
-from Recommedation.spider import proxy_ip
+FILE_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py")))) + '/data/').replace('\\', '/')
+DATA_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py"))))) + '/RecommendData/').replace('\\', '/')
 
 class Spider:
     PROXY = {}
@@ -26,7 +27,7 @@ class Spider:
             opener.addheaders = [("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55.0")]
             #3.安装和使用opener
             urllib.request.install_opener(opener)
-            response = urllib.request.urlopen(url).read()
+            response = urllib.request.urlopen(url,timeout=5).read()
 
             # 获取页面的编码方式，然后才可以根据编码方式进行解码
             charset = chardet.detect(response)
@@ -34,10 +35,9 @@ class Spider:
             # 根据页面编码方式进行解码，不然会乱码
             html_data = response.decode(encoding, 'ignore')
         except Exception as err:
-            self.PROXY = proxy_ip.get_proxy()
-            print("fail to get html data,err:"+str(err))
-            return -1
-        return html_data
+            print("get_html err: "+str(err))
+            return -1,str(err)
+        return 0,html_data
 
     #获取每个商品的评论
     def get_comments(self,filePath,sku):
@@ -165,14 +165,11 @@ class Spider:
 
 def getSpider():
     spider = Spider()
-    # spider.PROXY = {'http': '122.114.31.177:808'}
     spider.PROXY = {'http': '119.5.1.22:808'}
-    # spider.PROXY = {'http': '171.37.156.184:8123'}
     return spider
 
 if __name__== '__main__':
-    file_path = ( os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("jd_search_product.py")))) + '/data/').replace('\\', '/')
     spider = Spider()
     # spider.get_comments( file_path, "1592994")
-    spider.get_rate(file_path, '14102602376')
-    spider.get_rate(file_path, '12582916863')
+    spider.get_rate(FILE_PATH, '14102602376')
+

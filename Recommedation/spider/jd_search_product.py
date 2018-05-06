@@ -84,9 +84,9 @@ def crawl_items(file_path):
         item = phone_item.getItem()
         spider = jd_spider.getSpider()
         html_data = spider.get_html(url)#获取商品详情页面的html数据
-        if html_data == -1:
+        if html_data[0] == -1:
             continue
-        item = html_analysis.get_all_parameters(html_data,item)
+        item = html_analysis.get_all_parameters(html_data[1],item)
         item.price = spider.get_price(item.number) #获取商品的价格
         if item.price==-1 or database_handler.search_item(item.number)==1:
             file = open(file_path + 'procedure_files/solved_urls.txt', "a", encoding='utf-8')
