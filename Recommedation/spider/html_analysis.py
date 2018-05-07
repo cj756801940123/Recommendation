@@ -43,7 +43,7 @@ def is_global(soup):
         print('\n京东购物')
         return 0
 
-#全球购获取商品详细信息
+# 全球购获取商品详细信息
 def get_parameters_global(soup,item):
     div = soup.find('div',class_ ="p-parameter")
     li = div.find('ul',class_="parameter2").find_all('li')
@@ -75,7 +75,7 @@ def get_parameters_global(soup,item):
             continue
     return item
 
-#获取商品详细信息
+# 获取商品详细信息
 def get_parameters(soup,item):
     div = soup.find('div',class_ ="p-parameter")
     li = div.find('ul', id="parameter-brand",class_="p-parameter-list").li
@@ -128,7 +128,7 @@ def get_parameters(soup,item):
     item.img_address = 'https:' + str(images[0].img.get('src'))
     return item
 
-#获取商品的各种信息，用它来调用其它的方法
+# 获取商品的各种信息，用它来调用其它的方法
 def get_all_parameters(html_data,item):
     soup = bs(html_data, 'html.parser')
     if is_global(soup):
@@ -139,12 +139,9 @@ def get_all_parameters(html_data,item):
     item.get_time = datetime.datetime.now()
     return item
 
-#获取店铺信息
-def get_shop_info(sku,shop_list):
+# 获取店铺id
+def get_shop_id(html_data):
     try:
-        url = 'https://item.m.jd.com/product/' + sku + '.html'
-        _spider = jd_spider.Spider()
-        html_data = _spider.get_html(url)
         soup = bs(html_data, 'html.parser')
         div = soup.find_all('script')
         found = 0
@@ -161,37 +158,26 @@ def get_shop_info(sku,shop_list):
                         found = 1
                         break
                 shop_id = temp[index+8:index2]
-                if shop_id in shop_list:
-                    return shop_list[shop_id]
         if len(shop_id)==0:
-            return -1
-        url = 'https://shop.m.jd.com/?shopId='+shop_id
-        html_data = _spider.get_html(url)
-        soup = bs(html_data, 'html.parser')
-        div = soup.find('div', class_='cell shop-info')
-        shop_name = div.find('span',class_='ui-flex shop-name').find('em').get_text()
-        follow_num = div.find('span',class_='ui-flex shop-other').find('em').get_text()
-        count = float(re.findall(r"\d+\.?\d*",follow_num)[0])
-        if follow_num.find('万')>0:
-            count = count*10000
-        count = int(count)
-        return shop_id,shop_name,str(count),sku
+            return -1,'fail'
+        return 0,shop_id
     except Exception as e:
-        print('get_shop_info err:'+str(e))
+        print('get_shop_id err:'+str(e))
         return -1,'fail'
 
-def get_follow_count(html_data):
+def get_shop_info(html_data):
     try:
         soup = bs(html_data, 'html.parser')
         div = soup.find('div', class_='cell shop-info')
+        shop_name = div.find('span', class_='ui-flex shop-name').find('em').get_text()
         follow_num = div.find('span',class_='ui-flex shop-other').find('em').get_text()
         count = float(re.findall(r"\d+\.?\d*",follow_num)[0])
         if follow_num.find('万')>0:
             count = count*10000
         count = int(count)
-        return 0,count
+        return 0,count,shop_name
     except Exception as e:
-        print('get_follow_count err:'+str(e))
+        print('html_analysis get_shop_info err:'+str(e))
         return -1,'fail'
 
 if __name__ == '__main__':

@@ -19,10 +19,9 @@ class Spider():
     def __init__(self):
         self.PROXY = {'http': '223.241.78.51:8118'}
 
-    PROXY = {}
     #爬取页面的信息，返回的是HTML格式的信息
     def get_html(self,url):
-        for a in range(2):
+        for a in range(3):
             try:
                 #1.创建一个代理处理器ProxyHandler
                 proxy_support = urllib.request.ProxyHandler(self.PROXY)
@@ -179,6 +178,6 @@ if __name__== '__main__':
     # 5706773 / 6019534/ 5089225
     _spider = Spider()
     # spider.get_rate(FILE_PATH, '14102602376')
-    result = _spider.get_price('5706773')
-    # result = spider.get_html('https://item.jd.com/6494556.html')
+    # result = _spider.get_price('5706773')
+    result = _spider.get_html('https://item.m.jd.com/product/20609148872.html ')
     print(result[0],result[1])
