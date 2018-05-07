@@ -143,8 +143,8 @@ def get_all_parameters(html_data,item):
 def get_shop_info(sku,shop_list):
     try:
         url = 'https://item.m.jd.com/product/' + sku + '.html'
-        spider = jd_spider.getSpider()
-        html_data = spider.get_html(url)
+        _spider = jd_spider.Spider()
+        html_data = _spider.get_html(url)
         soup = bs(html_data, 'html.parser')
         div = soup.find_all('script')
         found = 0
@@ -166,7 +166,7 @@ def get_shop_info(sku,shop_list):
         if len(shop_id)==0:
             return -1
         url = 'https://shop.m.jd.com/?shopId='+shop_id
-        html_data = spider.get_html(url)
+        html_data = _spider.get_html(url)
         soup = bs(html_data, 'html.parser')
         div = soup.find('div', class_='cell shop-info')
         shop_name = div.find('span',class_='ui-flex shop-name').find('em').get_text()
@@ -178,7 +178,21 @@ def get_shop_info(sku,shop_list):
         return shop_id,shop_name,str(count),sku
     except Exception as e:
         print('get_shop_info err:'+str(e))
-        return -1
+        return -1,'fail'
+
+def get_follow_count(html_data):
+    try:
+        soup = bs(html_data, 'html.parser')
+        div = soup.find('div', class_='cell shop-info')
+        follow_num = div.find('span',class_='ui-flex shop-other').find('em').get_text()
+        count = float(re.findall(r"\d+\.?\d*",follow_num)[0])
+        if follow_num.find('万')>0:
+            count = count*10000
+        count = int(count)
+        return 0,count
+    except Exception as e:
+        print('get_follow_count err:'+str(e))
+        return -1,'fail'
 
 if __name__ == '__main__':
     url = 'https://item.jd.com/21056257657.html'

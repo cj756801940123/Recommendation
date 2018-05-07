@@ -42,7 +42,6 @@ def update_shop_info(file_path):
             num = line[3]
             print(count, line)
             count += 1
-
             sql = "update cellphones set shop_id='%s', shop_name='%s',follow_count=%d where number='%s'" % (id, name,int(num), sku)
             cur.execute(sql)  # 执行sql语句
             db.commit()  # 提交到数据库执行
