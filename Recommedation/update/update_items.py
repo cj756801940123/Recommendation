@@ -1,12 +1,13 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
-from Recommedation.common import item
-from Recommedation.common import file_util
-from Recommedation.database import database_util
-from Recommedation.spider import html_analysis
-from Recommedation.spider import jd_spider
-
 import os
+
+from Recommedation.common import file_util
+from Recommedation.common import item
+from Recommedation.database import database_util
+from Recommedation.spider import jd_spider
+from Recommedation.update import thread_queue
+
 FILE_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py")))) + '/data/').replace('\\', '/')
 DATA_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py"))))) + '/RecommendData/').replace('\\', '/')
 UNSOLVED_FILE = ''
@@ -14,15 +15,15 @@ SOLVED_FILE = ''
 ERR_FILE = ''
 
 #获取待更新的url放进文件里
-def get_urls_file(table):
+def get_unsloved_file(table,type):
     global UNSOLVED_FILE
     global SOLVED_FILE
     global ERR_FILE
-    UNSOLVED_FILE = FILE_PATH+'update_files/unsolved_'+table+'_urls.txt'
-    SOLVED_FILE = FILE_PATH+'update_files/solved_'+table+'_urls.txt'
-    ERR_FILE = FILE_PATH+'update_files/err_'+table+'_urls.txt'
+    UNSOLVED_FILE = FILE_PATH+'update_files/unsolved_'+table+'_'+type+'s.txt'
+    SOLVED_FILE = FILE_PATH+'update_files/solved_'+table+'_'+type+'s.txt'
+    ERR_FILE = FILE_PATH+'update_files/err_'+table+'_'+type+'s.txt'
 
-    sql = 'select distinct url from '+table;
+    sql = 'select distinct '+type+' from '+table;
     sql_results = database_util.search_sql(sql,None)
     if sql_results[0] == -1:
         return
@@ -35,6 +36,25 @@ def get_urls_file(table):
 
     if os.path.exists(SOLVED_FILE):
         os.remove(SOLVED_FILE)
+
+def update_price(table):
+    sql = 'SELECT sku,max_price,min_price,avg_price,price_times  FROM '+table+ ' where TO_DAYS(NOW()) - TO_DAYS(update_price_time) >=2';
+    result = database_util.search_sql(sql,None)
+    prices = []
+    if result[0]!=-1:
+        times = list(result[1])
+        for i in times:
+            price = {}
+            price['sku'] = i[0]
+            price['max_price'] = float(i[1])
+            price['min_price'] = float(i[2])
+            price['avg_price'] = float(i[3])
+            price['price_times'] = int(i[4])
+            prices.append(price)
+    thread_queue.fill_queue(prices)
+    thread_queue.use_threading(['update_price',table])
+
+
 
 #打开那个全部都是链接的文件爬取每个商品的信息
 def crawl_urls():
@@ -84,7 +104,8 @@ if __name__ == '__main__':
     SOLVED_FILE = FILE_PATH+'update_files/solved_'+table+'_urls.txt'
 
     # get_urls_file('cellphone')
-    crawl_urls()
+    update_price(table)
+    # crawl_urls()
     # test_urls('https://item.jd.com/6494556.html')
     #<urlopen error [WinError 10060] 由于连接方在一段时间后没有正确答复或连接的主机没有反应，连接尝试失败。>
     #<urlopen error timed out>

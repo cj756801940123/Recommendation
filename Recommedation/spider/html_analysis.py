@@ -177,7 +177,7 @@ def get_shop_info(sku,shop_list):
         count = int(count)
         return shop_id,shop_name,str(count),sku
     except Exception as e:
-        print('get shop_info fail,err:'+str(e))
+        print('get_shop_info err:'+str(e))
         return -1
 
 if __name__ == '__main__':
