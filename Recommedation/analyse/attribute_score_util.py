@@ -2,7 +2,42 @@
 # -*- coding:utf-8 -*-
 from Recommedation.analyse import snow_nlp
 import os
+FILE_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py")))) + '/data/').replace('\\', '/')
+DATA_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py"))))) + '/RecommendData/').replace('\\', '/')
 
+#491219
+
+#有些评价换了行没有用户信息，需要处理让每一行都有用户信息
+def add_comment_info(path):
+    file_path = path+'/'
+    for sku_name in os.listdir(path):
+        print(sku_name)
+        line_list = []
+        info = ''
+        file = open(file_path+sku_name, "r", encoding='utf-8')
+        for each_line in file:
+            if each_line=='\n':
+                continue
+            index = each_line.find(' comment:')
+            if index>=0:
+                info = each_line[0:index+9]
+                if each_line[index + 9:] == '\n':
+                    continue
+                each_line = each_line.strip("\n")
+            else:
+                each_line = (info+each_line).strip("\n")
+            line_list.append(each_line)
+        file.close()
+
+        line_list = list(set(line_list))
+        file = open(file_path+sku_name, "w", encoding='utf-8')
+        for i in line_list:
+            file.write(i + '\n')  # 把已经处理了的数据写进文件里面去
+        file.close()
+
+def solved_raw_comment(table):
+    # add_comment_info(DATA_PATH+table+'/item_comments/')
+    add_comment_info(DATA_PATH+table+'/big_files/')
 
 # 把已经处理过的行从已处理文件中读出，然后从未处理的文件中去掉这些行
 def del_solved_item(unsolve_file, solved_file):
@@ -42,24 +77,6 @@ def del_solved_item(unsolve_file, solved_file):
     for url in all_urls:
         file.write(url + '\n')
     file.close()
-
-def del_duplicate(file_name):
-    url_list = []
-    try:
-        file = open(file_name, "r", encoding='utf-8')
-        for each_line in file:
-            url_list.append(each_line.strip("\n"))
-        file.close()
-        url_list = list(set(url_list))
-        file = open(file_name, "w", encoding='utf-8')
-        for i in url_list:
-            # print(i)
-            file.write(i + '\n')  # 把已经处理了的数据写进文件里面去
-    except Exception as e:
-        print("file not exit,err:"+str(e))
-        return
-    finally:
-        file.close()
 
 def get_score(file_path):
     unsolved_file = file_path + 'temp/unsolved_skus.txt'
@@ -103,8 +120,9 @@ def get_score(file_path):
 
 
 if __name__ == '__main__':
-    file_path = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("atribute_score_util.py")))) + '/data/').replace('\\','/')
-    get_score(file_path)
+    table = 'cellphone'
+    # solved_raw_comment(table)
+    add_comment_info(DATA_PATH + table + '/big_files/')
     # neg_file = file_path+'train_files/neg.txt'
     # pos_file = file_path+'train_files/pos.txt'
     # train_snowNLP(neg_file, pos_file)

@@ -30,7 +30,7 @@ class MyThread(threading.Thread):
             get_shop_id(self.name, self.queue,self.work[1])
         elif self.work[0] == 'get_comment':
             # get_comment(self.queue, self.work[1],self.work[2],'get_comment')
-            get_comment(self.queue, self.work[1],self.work[2],'get_atfet_comment')
+            get_comment(self.queue, self.work[1],self.work[2])
         print("Exiting " + self.name)
 
 def fill_queue(work_list):
@@ -128,7 +128,7 @@ def get_shop_id(thread_name, queue, table):
             QUEUE_LOCK.release()
         time.sleep(1)
 
-def get_comment(queue, table,page_no,comment_type):
+def get_comment(queue, table,page_no):
     while not EXIT_FLAG:
         QUEUE_LOCK.acquire()
         if not WORK_QUEUE.empty():
@@ -136,9 +136,8 @@ def get_comment(queue, table,page_no,comment_type):
                 sku = queue.get()
                 QUEUE_LOCK.release()
                 _spider = jd_spider.Spider()
-                if comment_type=='get_comment':
-                    result = _spider.get_comment(table,sku,page_no)
-                else:
+                result = _spider.get_comment(table,sku,page_no)
+                if result[0] != -1:
                     result = _spider.get_after_comment(table,sku,page_no)
                 if result[0] != -1:
                     sql = 'update ' + table + ' set update_comment_time=%s where sku=%s '

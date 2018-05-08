@@ -56,7 +56,7 @@ def get_shop_id(table):
     thread_queue.use_threading(['get_shop_id',table])
 
 def get_comment(table):
-    sql = 'SELECT sku FROM '+table+ ' where follow_count>=10000 and comment_count>=5000';
+    sql = 'SELECT sku FROM '+table+ ' where follow_count>=10000 and comment_count>=3000 and comment_count<5000';
     # sql = 'SELECT sku FROM '+table+ ' where follow_count>=100000 and TO_DAYS(NOW()) - TO_DAYS(update_comment_time) >=5';
     # sql = 'SELECT sku FROM '+table+ ' where follow_count>=100000';
     result = database_util.search_sql(sql,None)

@@ -5,14 +5,14 @@ FILE_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("da
 DATA_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py"))))) + '/RecommendData/').replace('\\', '/')
 
 #文件去除重读行
-def del_duplicate(relative_path):
+def del_duplicate(file_name):
     url_list = []
-    file = open(file_path+relative_path, "r", encoding='utf-8')
+    file = open(file_name, "r", encoding='utf-8')
     for each_line in file:
         url_list.append(each_line.strip("\n"))
     file.close()
     url_list = list(set(url_list))
-    file = open(file_path+relative_path, "w", encoding='utf-8')
+    file = open(file_name, "w", encoding='utf-8')
     for i in url_list:
         file.write(i + '\n')  # 把已经处理了的数据写进文件里面去
     file.close()

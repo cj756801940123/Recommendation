@@ -154,7 +154,7 @@ class Spider():
                         item_file.write(info+c_content + '\n')
                     data['page'] += 1
                     page = data['page']
-                    print('sku %s, comment page: %s'%(sku,str(page)))
+                    print('comment sku %s, comment page: %s'%(sku,str(page)))
                     if page>=page_no:
                         break
                 item_file.close()
@@ -215,7 +215,7 @@ class Spider():
                         item_file.write(info+after_commet+ '\n')
                     data['page'] += 1
                     page = data['page']
-                    print('sku %s, comment page: %s'%(sku,str(page)))
+                    print('after_comment sku %s, comment page: %s'%(sku,str(page)))
                     if page>=page_no:
                         break
                 item_file.close()
