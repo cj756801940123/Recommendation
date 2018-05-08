@@ -3,6 +3,9 @@
 import jieba.analyse
 import numpy as np
 import os
+FILE_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py")))) + '/data/').replace('\\', '/')
+DATA_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py"))))) + '/RecommendData/').replace('\\', '/')
+
 
 # hash操作
 def string_hash(source):
@@ -34,9 +37,8 @@ def hammingDis(simhash1, simhash2):
 
 # 分词 权重 关键词 hash
 def cal_simhash(text):
-    file_path = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("similarity_util.py")))) + '/data/').replace('\\','/')
     seg = jieba.cut(text)  # 分词
-    jieba.analyse.set_stop_words(file_path+'procedure_files/stop_words.txt')  # 去除停用词
+    jieba.analyse.set_stop_words(FILE_PATH+'procedure_files/stop_words.txt')  # 去除停用词
     keyWord = jieba.analyse.extract_tags( '|'.join(seg), topK=10, withWeight=True, allowPOS=())  # 先按照权重排序，再按照词排序
     # print(keyWord)  # 前20个关键词，权重
     keyList = []

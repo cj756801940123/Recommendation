@@ -3,36 +3,36 @@
 from snownlp import SnowNLP
 from snownlp import sentiment
 from Recommedation.analyse import similarity_util
+from Recommedation.common import file_util
 import re
 import os
+FILE_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py")))) + '/data/').replace('\\', '/')
+DATA_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py"))))) + '/RecommendData/').replace('\\', '/')
 
-#文件里面有很多不好的评论，去掉那些不好的额评论，选取max_num行放进out_file里面去
-def filter_comment(word_file,in_file,out_file,max_num):
-    fin = open(file_path + 'procedure_files/'+word_file, 'r', encoding='utf-8')  # 以读的方式打开文件
+#文件里面有很多打分和实际评论不相符的评论，去掉那些不相符的评论
+def filter_opposive_comment(word_file,file_name):
+    fin = open(word_file, 'r', encoding='utf-8')  # 以读的方式打开文件
     words = []
     for eachLine in fin:
         words.append(eachLine.strip())
     fin.close()
 
-    fin = open(in_file, 'r', encoding='utf-8')  # 以读的方式打开文件
-    fout = open(out_file, 'w', encoding='utf-8')  # 以写得方式打开文件
-    count = 1
-    for eachLine in fin:
-        line = eachLine.strip()
-        if len(line)<=0 or line.find('未填写评价内容')>=0:
-            continue
-        if count>max_num:
-            break
+    file = open(file_name, 'r', encoding='utf-8')  # 以读的方式打开文件
+    line_list = []
+    for each_line in file:
         bad = 0
         for i in words:
-            if line.find(i)>=0:
+            if each_line.find(i)>=0:
                 bad = 1
                 break
         if bad == 0:
-            fout.write(line+ '\n')  # 将分词好的结果写入到输出文件
-            count+=1
-    fin.close()
+            line_list.append(each_line)
+
+    fout = open(file_name, 'w', encoding='utf-8')  # 以写得方式打开文件
+    for i in line_list:
+        fout.write(i)
     fout.close()
+
 
 #从评论信息中值选取关于那些attribute_words的词放进文件里面去，最多要max_num行
 def get_train_file(attribute_words,in_file,out_file,max_num):
@@ -60,19 +60,6 @@ def get_train_file(attribute_words,in_file,out_file,max_num):
         fin.close()
         fout.close()
 
-#把文件中的重复行删掉
-def del_duplicate(in_file,out_file):
-    url_list = []
-    file = open(in_file, "r", encoding='utf-8')
-    for each_line in file:
-        url_list.append(each_line.strip("\n"))
-    file.close()
-    url_list = list(set(url_list))
-    file = open(out_file, "w", encoding='utf-8')
-    for i in url_list:
-        print(i)
-        file.write(i + '\n')
-    file.close()
 
 #根据我处理好的训练数据，给snoNLP训练一下
 def train_snowNLP(neg_file,pos_file):
@@ -81,23 +68,14 @@ def train_snowNLP(neg_file,pos_file):
     sentiment.save(file_path+'sentiment6.marshal')
     # 但是要把`snownlp/seg/__init__.py`里的`data_path`也改成你保存的位置，不然下次使用还是默认的。
 
-#获取需要进行评分的属性词
-def load_attibute_words(file_path):
-    fin = open(file_path + 'procedure_files/attribute_words.txt', 'r', encoding='utf-8')  # 以读的方式打开文件
-    attribute_words = []
-    for eachLine in fin:
-        word = eachLine.strip()
-        words = word.split(',')
-        temp = []
-        for i in words:
-            temp.append(i)
-        attribute_words.append(temp)
-    fin.close()
-    # print(attributeWords)
-    return attribute_words
 
-#wight1是这句评价所占的权重，wight2是争端评价所占的权重
+#wight1是这句评价所占的权重，wight2是整句评价所占的权重
 def sentiment_analysis(file_path,sku,wight1,wight2):
+
+
+    index = each_line.find(' comment:')
+    comment = each_line[index + 9:]
+
     attribute_words = load_attibute_words(file_path)
     comment_num = {}
     comment_score = {}
@@ -174,12 +152,19 @@ def test_sentiment(file_name):
     fin.close()
 
 if __name__ == '__main__':
-    file_path = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("snow_nlp.py")))) + '/data/').replace('\\','/')
-    # neg_file = file_path+'train_files/neg.txt'
-    # pos_file = file_path+'train_files/pos.txt'
+    # neg_file = file_path+'train_files/negative.txt'
+    # pos_file = file_path+'train_files/positive.txt'
+    table = 'cellphone'
+    badword_file = FILE_PATH+'train_files/bad_words.txt'
+    goodword_file = FILE_PATH+'train_files/good_words.txt'
+    file_util.del_duplicate(badword_file)
+    file_util.del_duplicate(goodword_file)
+    filter_opposive_comment(badword_file,DATA_PATH + table + '/big_files/positive.txt')
+    filter_opposive_comment(goodword_file,DATA_PATH + table + '/big_files/negative.txt')
     # train_snowNLP(neg_file, pos_file)
+
     # sentiment_analysis(file_path+'item_comments/5014204.txt',70,30)
     # test_sentiment(file_path+'train_files/train_result.txt')
     # sentiment_analysis(file_path + 'train_files/train_result.txt', 60, 40)
 
-
+#3926,21282

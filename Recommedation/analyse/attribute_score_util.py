@@ -1,17 +1,16 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 from Recommedation.analyse import snow_nlp
+from Recommedation.common import file_util
 import os
 FILE_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py")))) + '/data/').replace('\\', '/')
 DATA_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py"))))) + '/RecommendData/').replace('\\', '/')
 
-#491219
-
+#这个要多线程
 #有些评价换了行没有用户信息，需要处理让每一行都有用户信息
-def add_comment_info(path):
-    file_path = path+'/'
-    for sku_name in os.listdir(path):
-        print(sku_name)
+def add_comment_info(file_path):
+    for sku_name in os.listdir(file_path):
+        print(file_path+sku_name)
         line_list = []
         info = ''
         file = open(file_path+sku_name, "r", encoding='utf-8')
@@ -35,62 +34,71 @@ def add_comment_info(path):
             file.write(i + '\n')  # 把已经处理了的数据写进文件里面去
         file.close()
 
-def solved_raw_comment(table):
-    # add_comment_info(DATA_PATH+table+'/item_comments/')
+
+def load_attibute_word(file_name):
+    fin = open(file_name, 'r', encoding='utf-8')  # 以读的方式打开文件
+    attribute_words = []
+    for eachLine in fin:
+        word = eachLine.strip()
+        words = word.split(',')
+        temp = []
+        for i in words:
+            temp.append(i)
+        attribute_words.append(temp)
+    fin.close()
+    return attribute_words
+
+
+#这个要多线程
+#筛选出有关键信息的评论
+def filter_comment(in_path,out_path,attribute_words):
+    FOUND = 0
+    for sku_name in os.listdir(in_path):
+        print(in_path + sku_name)
+        in_file = open(in_path + sku_name, "r", encoding='utf-8')
+        line_list = []
+
+        for each_line in in_file:
+            FOUND = 0
+            for i in attribute_words:
+                if FOUND ==1:
+                    FOUND = 0
+                    break
+                for j in i:
+                    if len(j)>0 and each_line.find(j) >= 0:
+                        line_list.append(each_line)
+                        FOUND =1
+                        break
+        in_file.close()
+
+        out_file = open(out_path + sku_name, "w", encoding='utf-8')
+        for i in line_list:
+            out_file.write(i)
+        out_file.close()
+
+
+def get_useful_comment(table):
+    # 有些评价换了行没有用户信息，需要处理让每一行都有用户信息
+    add_comment_info(DATA_PATH+table+'/item_comments/')
     add_comment_info(DATA_PATH+table+'/big_files/')
+    add_comment_info(DATA_PATH+table+'/after_comments/')
 
-# 把已经处理过的行从已处理文件中读出，然后从未处理的文件中去掉这些行
-def del_solved_item(unsolve_file, solved_file):
-    # 获取所有的url
-    all_urls = []
-    file = open(unsolve_file, "r", encoding='utf-8')
-    for each_line in file:
-        url = each_line.strip("\n")
-        if len(url) <= 0:
-            break
-        all_urls.append(url)
-    file.close()
+    #把所有评价信息放进useful_comments里面去
+    attribute_words = load_attibute_word(FILE_PATH + 'procedure_files/' + table + '_attributes.txt')
+    in_path = DATA_PATH+table+'/item_comments/'
+    out_path = DATA_PATH+table+'/useful_comments/'
+    filter_comment(in_path,out_path,attribute_words)
+    in_path = DATA_PATH+table+'/big_files/'
+    filter_comment(in_path,in_path,attribute_words)
 
-    # 获取已经处理的url
-    solved_urls = []
-    try:
-        file = open(solved_file, "r", encoding='utf-8')
-    except:
-        return
-
-    for each_line in file:
-        url = each_line.strip("\n")
-        if len(url) <= 0:
-            break
-        solved_urls.append(url)
-    file.close()
-
-    file = open(unsolve_file, "w+", encoding='utf-8')
-    file.truncate()
-
-    for url in solved_urls:
-        if url in all_urls:
-            all_urls.remove(url)
-
-    # 把还没处理的url写回文件里面去
-    file = open(unsolve_file, "w", encoding='utf-8')
-    for url in all_urls:
-        file.write(url + '\n')
-    file.close()
 
 def get_score(file_path):
-    unsolved_file = file_path + 'temp/unsolved_skus.txt'
-    solved_file = file_path + 'temp/solved_skus.txt'
-    del_duplicate(solved_file)
-    del_solved_item(unsolved_file, solved_file)
-
     in_file = open(file_path + 'temp/unsolved_skus.txt', "r", encoding='utf-8')
     count = 1
     for each_line in in_file:
         sku = each_line.strip("\n")
         if len(sku) <= 0:
             break
-
         result = snow_nlp.sentiment_analysis(file_path,sku,80,20)
         if result is None:
             continue
@@ -121,8 +129,8 @@ def get_score(file_path):
 
 if __name__ == '__main__':
     table = 'cellphone'
-    # solved_raw_comment(table)
-    add_comment_info(DATA_PATH + table + '/big_files/')
-    # neg_file = file_path+'train_files/neg.txt'
-    # pos_file = file_path+'train_files/pos.txt'
+    get_useful_comment(table)
+    # add_comment_info(DATA_PATH + table + '/big_files/')
+    # neg_file = file_path+'train_files/negative.txt'
+    # pos_file = file_path+'train_files/positive.txt'
     # train_snowNLP(neg_file, pos_file)

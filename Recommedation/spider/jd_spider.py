@@ -149,7 +149,7 @@ class Spider():
                         info = str(score) + ' nickname:' + name+' comment:'
                         if score > 4:
                             pos_file.write(info+c_content + '\n')
-                        if score <= 4:
+                        if score <=2:
                             neg_file.write(info+c_content + '\n')
                         item_file.write(info+c_content + '\n')
                     data['page'] += 1
@@ -186,7 +186,7 @@ class Spider():
             'fold': 1
         }
         #全部、好评：score=0，差评：score=1，追评：score=5
-        item_file = codecs.open(DATA_PATH + table+'/after_comments/'+sku + '.txt', 'a', encoding='utf-8')
+        item_file = codecs.open(DATA_PATH + table+'/item_comments/'+sku + '.txt', 'a', encoding='utf-8')
         pos_file = codecs.open(DATA_PATH + table+'/big_files/positive.txt', 'a', encoding='utf-8')
         neg_file = codecs.open(DATA_PATH + table+'/big_files/negative.txt', 'a', encoding='utf-8')
         for a in range(3):
@@ -210,7 +210,7 @@ class Spider():
                         if score > 4:
                             pos_file.write(info+after_commet + '\n')
 
-                        if score <= 4:
+                        if score <= 2:
                             neg_file.write(info+after_commet + '\n')
                         item_file.write(info+after_commet+ '\n')
                     data['page'] += 1
