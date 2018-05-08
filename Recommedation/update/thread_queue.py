@@ -28,6 +28,9 @@ class MyThread(threading.Thread):
             update_shop_info(self.name, self.queue,self.work[1])
         elif self.work[0] == 'get_shop_id':
             get_shop_id(self.name, self.queue,self.work[1])
+        elif self.work[0] == 'get_comment':
+            # get_comment(self.queue, self.work[1],self.work[2],'get_comment')
+            get_comment(self.queue, self.work[1],self.work[2],'get_atfet_comment')
         print("Exiting " + self.name)
 
 def fill_queue(work_list):
@@ -124,7 +127,31 @@ def get_shop_id(thread_name, queue, table):
         else:
             QUEUE_LOCK.release()
         time.sleep(1)
-    
+
+def get_comment(queue, table,page_no,comment_type):
+    while not EXIT_FLAG:
+        QUEUE_LOCK.acquire()
+        if not WORK_QUEUE.empty():
+            try:
+                sku = queue.get()
+                QUEUE_LOCK.release()
+                _spider = jd_spider.Spider()
+                if comment_type=='get_comment':
+                    result = _spider.get_comment(table,sku,page_no)
+                else:
+                    result = _spider.get_after_comment(table,sku,page_no)
+                if result[0] != -1:
+                    sql = 'update ' + table + ' set update_comment_time=%s where sku=%s '
+                    data = [datetime.datetime.now(),sku]
+                    database_util.update_sql(sql, data)
+            except Exception as err:
+                print('thread_queue get_comment err:' + str(err))
+        else:
+            QUEUE_LOCK.release()
+        time.sleep(1)
+
+
+
 def use_threading(work):
     global EXIT_FLAG
     THREAD_LIST = ["Thread-1", "Thread-2", "Thread-3","Thread-4"]

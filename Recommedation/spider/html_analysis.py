@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 from bs4 import BeautifulSoup as bs
-from Recommedation.spider import jd_spider
 import datetime
 import re
 

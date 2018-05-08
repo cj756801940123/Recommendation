@@ -55,13 +55,23 @@ def get_shop_id(table):
     thread_queue.fill_queue(sku)
     thread_queue.use_threading(['get_shop_id',table])
 
-def del_items(table):
-    sql = 'delete from '+table+' where shop_name is null;'
-    database_util.update_sql(sql,None)
-
-def update_img(table):
-    sql = 'select img from '+table
-    database_util.search_sql(sql,None)
+def get_comment(table):
+    sql = 'SELECT sku FROM '+table+ ' where follow_count>=10000 and comment_count>=5000';
+    # sql = 'SELECT sku FROM '+table+ ' where follow_count>=100000 and TO_DAYS(NOW()) - TO_DAYS(update_comment_time) >=5';
+    # sql = 'SELECT sku FROM '+table+ ' where follow_count>=100000';
+    result = database_util.search_sql(sql,None)
+    sku = []
+    if result[0]!=-1:
+        id = list(result[1])
+        for i in id:
+            if i[0] is not None:
+                # print(i[0])
+                sku.append(i[0])
+            else:
+                print("sku is null")
+    thread_queue.fill_queue(sku)
+    #第三个参数是要获取多少页的评论数据
+    thread_queue.use_threading(['get_comment',table,100])
 
 
 if __name__ == '__main__':
@@ -69,8 +79,7 @@ if __name__ == '__main__':
     # update_price(table)
     # get_shop_id(table)
     # update_shop_info(table)
-    del_items(table)
-
+    get_comment(table)
 # https://img12.360buyimg.com/n7/jfs/t16648/185/641797811/166080/e96a680b/5a9d248cN071f4959.jpg
 # https://img12.360buyimg.com/n7/jfs/t6010/111/3843138696/73795/bf58700d/5959ab7fN154e56b4.jpg
 # https://img12.360buyimg.com/n5/s54x54_jfs/t6010/111/3843138696/73795/bf58700d/5959ab7fN154e56b4.jpg
