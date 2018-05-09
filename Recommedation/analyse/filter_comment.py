@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
-from Recommedation.analyse import snow_nlp
+from Recommedation.analyse import sentiment_analysis
 from Recommedation.common import file_util
 import os
 FILE_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py")))) + '/data/').replace('\\', '/')

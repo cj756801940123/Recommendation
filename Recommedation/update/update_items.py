@@ -1,17 +1,16 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 import os
-from Recommedation.common import file_util
-from Recommedation.common import item
-from Recommedation.database import database_util
-from Recommedation.spider import jd_spider
+
+from Recommedation.common import database_util
 from Recommedation.update import thread_queue
+
 FILE_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py")))) + '/data/').replace('\\', '/')
 DATA_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py"))))) + '/RecommendData/').replace('\\', '/')
 
 def update_price(table):
     sql = 'SELECT sku,max_price,min_price,avg_price,price_times  FROM '+table+ ' where TO_DAYS(NOW()) - TO_DAYS(update_price_time) >=1';
-    result = database_util.search_sql(sql,None)
+    result = database_util.search_sql(sql, None)
     prices = []
     if result[0]!=-1:
         times = list(result[1])
@@ -28,7 +27,7 @@ def update_price(table):
 
 def update_shop_info(table):
     sql = 'SELECT shop_id FROM '+table+ ' where TO_DAYS(NOW()) - TO_DAYS(update_shop_time) >=1';
-    result = database_util.search_sql(sql,None)
+    result = database_util.search_sql(sql, None)
     shop_id = []
     if result[0]!=-1:
         id = list(result[1])
@@ -43,7 +42,7 @@ def update_shop_info(table):
 
 def get_shop_id(table):
     sql = 'SELECT sku FROM '+table+ ' where shop_id is null';
-    result = database_util.search_sql(sql,None)
+    result = database_util.search_sql(sql, None)
     sku = []
     if result[0]!=-1:
         id = list(result[1])
@@ -59,7 +58,7 @@ def get_comment(table):
     sql = 'SELECT sku FROM '+table+ ' where follow_count>=10000 and comment_count>=3000 and comment_count<5000';
     # sql = 'SELECT sku FROM '+table+ ' where follow_count>=100000 and TO_DAYS(NOW()) - TO_DAYS(update_comment_time) >=5';
     # sql = 'SELECT sku FROM '+table+ ' where follow_count>=100000';
-    result = database_util.search_sql(sql,None)
+    result = database_util.search_sql(sql, None)
     sku = []
     if result[0]!=-1:
         id = list(result[1])
@@ -75,9 +74,9 @@ def get_comment(table):
 
 if __name__ == '__main__':
     table = 'cellphone'
-    # update_price(table)
+    update_price(table)
     # get_shop_id(table)
-    update_shop_info(table)
+    # update_shop_info(table)
     # get_comment(table)
 # https://img12.360buyimg.com/n7/jfs/t16648/185/641797811/166080/e96a680b/5a9d248cN071f4959.jpg
 # https://img12.360buyimg.com/n7/jfs/t6010/111/3843138696/73795/bf58700d/5959ab7fN154e56b4.jpg

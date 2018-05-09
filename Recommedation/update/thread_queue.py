@@ -1,12 +1,13 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
+import datetime
 import queue
 import threading
-from Recommedation.spider import jd_spider
-from Recommedation.spider import html_analysis
-from Recommedation.database import database_util
 import time
-import datetime
+
+from Recommedation.common import database_util
+from Recommedation.spider import html_analysis
+from Recommedation.spider import jd_spider
 
 QUEUE_LOCK = threading.Lock()
 WORK_QUEUE = queue.Queue()
@@ -62,12 +63,12 @@ def update_price(thread_name, queue,table):
                         max_price = cur_price
                     if cur_price<min_price:
                         min_price = cur_price
-                    avg_price = (avg_price*price_times+cur_price)/(price_times+1)
+                    avg_price = round((avg_price*price_times+cur_price)/(price_times+1),2)
                     price_times +=1
-                    print("%s: %f, %f, %f, %f" % (thread_name,max_price,min_price,avg_price, cur_price))
+                    print("%s: %.2f, %.2f, %.2f, %.2f" % (thread_name,max_price,min_price,avg_price, cur_price))
                     sql = 'update '+table+' set update_price_time=%s,max_price=%s,min_price=%s,avg_price=%s,price=%s,price_times=%s where sku=%s '
                     data = [ datetime.datetime.now(),max_price,min_price,avg_price,cur_price,price_times,sku]
-                    database_util.update_sql(sql,data)
+                    database_util.update_sql(sql, data)
             except Exception as err:
                 print('thread_queue update_price err:' + str(err))
         else:

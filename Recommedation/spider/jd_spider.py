@@ -50,7 +50,7 @@ class Spider():
             try:
                 url = "https://p.3.cn/prices/mgets?skuIds=J_" + sku
                 proxy_support = urllib.request.ProxyHandler(self.PROXY)
-                print(proxy_support)
+                # print(proxy_support)
                 opener = urllib.request.build_opener(proxy_support)
                 opener.addheaders = [("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55.0")]
                 urllib.request.install_opener(opener)

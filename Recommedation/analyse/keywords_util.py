@@ -65,37 +65,6 @@ def update_words():
     jieba.suggest_freq('杠杠的', True)
     jieba.suggest_freq('全面屏', True)
 
-def cut_file(in_file,out_file):
-    fin = open(in_file, 'r', encoding='utf-8')  # 以读的方式打开文件
-    fout = open(out_file, 'w', encoding='utf-8')  # 以写得方式打开文件
-    count = 1
-    for eachLine in fin:
-        line = eachLine.strip()
-        if len(line)<=0:
-            continue
-        if count<=10000:
-            fout.write(line+ '\n')  # 将分词好的结果写入到输出文件
-        else:
-            break
-        count+=1
-    fin.close()
-    fout.close()
-    pass
-
-#用斯坦福的进行分词
-def standford_cut_words():
-    nlp = StanfordCoreNLP(r'D:/ComputerScience/ProgramsOfPython/Recommendation/lib/stanford-corenlp-full-2018-01-31/',lang='zh')
-    fin = open(FILE_PATH+'item_comments/comments.txt', 'r', encoding='utf-8')  # 以读的方式打开文件
-    fout = open(FILE_PATH+'item_comments/stanford_cut_words.txt', 'w', encoding='utf-8')  # 以写得方式打开文件
-    for eachLine in fin:
-        line = eachLine.strip()
-        if not line=='':
-            tags = nlp.pos_tag(line)
-            for i in tags:
-                fout.write(i[0] + ' '+i[1]+'\n')  # 将分词好的结果写入到输出文件
-                print(i[0] + ' '+ i[1])
-    fin.close()
-    fout.close()
 
 def get_comment_similarity(content1,content2,topK):
     tags1 = jieba.analyse.textrank(content1, topK=topK, withWeight=False)
