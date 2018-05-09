@@ -83,7 +83,7 @@ def update_shop_info(thread_name, queue, table):
                 QUEUE_LOCK.release()
                 _spider = jd_spider.Spider()
                 url = 'https://shop.m.jd.com/?shopId=' + shop_id
-                print(url)
+                # print(url)
                 html_data = _spider.get_html(url)
                 if html_data[0]!=-1:
                     result = html_analysis.get_shop_info(html_data[1])

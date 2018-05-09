@@ -50,13 +50,14 @@ class Spider():
             try:
                 url = "https://p.3.cn/prices/mgets?skuIds=J_" + sku
                 proxy_support = urllib.request.ProxyHandler(self.PROXY)
+                print(proxy_support)
                 opener = urllib.request.build_opener(proxy_support)
                 opener.addheaders = [("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55.0")]
                 urllib.request.install_opener(opener)
                 hjson = json.loads(urllib.request.urlopen(url,timeout=5).read().decode('utf-8'))
                 return 0,float(hjson[0]['op'])
             except Exception as err:
-                print("get_price err:" + sku + " " + str(err))
+                print("get_price err: %s try %d time %s"%(sku,a+1,str(err)))
                 self.PROXY = proxy_ip.get_proxy()
                 time.sleep(2)
                 continue
@@ -148,9 +149,11 @@ class Spider():
                             continue
                         info = str(score) + ' nickname:' + name+' comment:'
                         if score > 4:
-                            pos_file.write(info+c_content + '\n')
+                            if len(c_content) >= 10 and len(c_content) <= 35:
+                                pos_file.write(info+c_content + '\n')
                         if score <=2:
-                            neg_file.write(info+c_content + '\n')
+                            if len(c_content)>=10 and len(c_content)<=35:
+                                neg_file.write(info+c_content + '\n')
                         item_file.write(info+c_content + '\n')
                     data['page'] += 1
                     page = data['page']

@@ -73,13 +73,12 @@ def get_comment(table):
     #第三个参数是要获取多少页的评论数据
     thread_queue.use_threading(['get_comment',table,100])
 
-
 if __name__ == '__main__':
     table = 'cellphone'
     # update_price(table)
     # get_shop_id(table)
-    # update_shop_info(table)
-    get_comment(table)
+    update_shop_info(table)
+    # get_comment(table)
 # https://img12.360buyimg.com/n7/jfs/t16648/185/641797811/166080/e96a680b/5a9d248cN071f4959.jpg
 # https://img12.360buyimg.com/n7/jfs/t6010/111/3843138696/73795/bf58700d/5959ab7fN154e56b4.jpg
 # https://img12.360buyimg.com/n5/s54x54_jfs/t6010/111/3843138696/73795/bf58700d/5959ab7fN154e56b4.jpg

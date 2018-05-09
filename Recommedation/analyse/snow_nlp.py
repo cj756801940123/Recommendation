@@ -9,30 +9,6 @@ import os
 FILE_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py")))) + '/data/').replace('\\', '/')
 DATA_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py"))))) + '/RecommendData/').replace('\\', '/')
 
-#文件里面有很多打分和实际评论不相符的评论，去掉那些不相符的评论
-def filter_opposive_comment(word_file,file_name):
-    fin = open(word_file, 'r', encoding='utf-8')  # 以读的方式打开文件
-    words = []
-    for eachLine in fin:
-        words.append(eachLine.strip())
-    fin.close()
-
-    file = open(file_name, 'r', encoding='utf-8')  # 以读的方式打开文件
-    line_list = []
-    for each_line in file:
-        bad = 0
-        for i in words:
-            if each_line.find(i)>=0:
-                bad = 1
-                break
-        if bad == 0:
-            line_list.append(each_line)
-
-    fout = open(file_name, 'w', encoding='utf-8')  # 以写得方式打开文件
-    for i in line_list:
-        fout.write(i)
-    fout.close()
-
 
 #从评论信息中值选取关于那些attribute_words的词放进文件里面去，最多要max_num行
 def get_train_file(attribute_words,in_file,out_file,max_num):
@@ -62,10 +38,10 @@ def get_train_file(attribute_words,in_file,out_file,max_num):
 
 
 #根据我处理好的训练数据，给snoNLP训练一下
-def train_snowNLP(neg_file,pos_file):
+def train_snowNLP(neg_file,pos_file,table):
     file_path = 'F:/computer_science/python3/lib/site-packages/snownlp/sentiment/'
     sentiment.train(neg_file, pos_file)
-    sentiment.save(file_path+'sentiment6.marshal')
+    sentiment.save(file_path+table+'.marshal')
     # 但是要把`snownlp/seg/__init__.py`里的`data_path`也改成你保存的位置，不然下次使用还是默认的。
 
 
@@ -151,17 +127,47 @@ def test_sentiment(file_name):
         print(whole_score,line)
     fin.close()
 
+
+def get_score(file_path):
+    in_file = open(file_path + 'temp/unsolved_skus.txt', "r", encoding='utf-8')
+    count = 1
+    for each_line in in_file:
+        sku = each_line.strip("\n")
+        if len(sku) <= 0:
+            break
+        result = snow_nlp.sentiment_analysis(file_path,sku,80,20)
+        if result is None:
+            continue
+        comment_scores = result[0]
+        attibute_words = result[1]
+        scores = []
+        scores.append(sku)
+        for i in attibute_words:
+            # print(i[0])
+            scores.append(comment_scores[i[0]])
+        scores.append(comment_scores['similarity'])
+
+        str_scores = ''
+        for i in scores:
+            str_scores = str_scores+str(i)+','
+        print(count, str_scores)
+
+        file = open(file_path + 'temp/comment_scores.txt', "a", encoding='utf-8')
+        file.write(str_scores+ '\n')  # 把已经处理了的数据写进文件里面去
+        file.close()
+
+        file = open(file_path + 'temp/solved_skus.txt', "a", encoding='utf-8')
+        file.write(sku + '\n')  # 把已经处理了的数据写进文件里面去
+        file.close()
+        count += 1
+    in_file.close()
+
+
 if __name__ == '__main__':
-    # neg_file = file_path+'train_files/negative.txt'
-    # pos_file = file_path+'train_files/positive.txt'
     table = 'cellphone'
-    badword_file = FILE_PATH+'train_files/bad_words.txt'
-    goodword_file = FILE_PATH+'train_files/good_words.txt'
-    file_util.del_duplicate(badword_file)
-    file_util.del_duplicate(goodword_file)
-    filter_opposive_comment(badword_file,DATA_PATH + table + '/big_files/positive.txt')
-    filter_opposive_comment(goodword_file,DATA_PATH + table + '/big_files/negative.txt')
-    # train_snowNLP(neg_file, pos_file)
+    neg_file = FILE_PATH+'train_files/'+table+'_neg.txt'
+    pos_file = FILE_PATH+'train_files/'+table+'_pos.txt'
+    train_snowNLP(neg_file, pos_file,table)
 
     # sentiment_analysis(file_path+'item_comments/5014204.txt',70,30)
     # test_sentiment(file_path+'train_files/train_result.txt')
