@@ -24,15 +24,8 @@ def del_file(table):
                     print('deleted sku:%s'%(sku))
 
 def update_img(table):
-    sql = 'select img from '+table
-    database_util.search_sql(sql, None)
-
-def update_score(user,table):
-    sql ='select rate,follow_count,comment_count,sentiment,brand_hot from weight weher user=%s  and kind=%s'
-    data =[user,table]
-    result = database_util
-
-def update_img(table):
+    # https://img11.360buyimg.com/n5/s54x54_jfs/t5773/143/1465870132/216483/4bbce005/592692d8Nbcc8f248.jpg
+    # https://img10.360buyimg.com/n7/jfs/t18772/89/1863054684/170815/d28ecae1/5adca3deN76bb61cb.jpg
     sql = 'select img,sku from '+table
     result = database_util.search_sql(sql, None)
     if result[0]!=-1:
@@ -48,9 +41,19 @@ def update_img(table):
             data = [new_img,sku]
             database_util.update_sql(sql,data)
 
-# https://img11.360buyimg.com/n5/s54x54_jfs/t5773/143/1465870132/216483/4bbce005/592692d8Nbcc8f248.jpg
-# https://img10.360buyimg.com/n7/jfs/t18772/89/1863054684/170815/d28ecae1/5adca3deN76bb61cb.jpg
+def unify_brand(table):
+    sql = 'select sku,brand from '+table+' where brand=%s'
+    result = database_util.search_sql(sql,'360手机')
+    if result[0]!=-1:
+        result = list(result[1])
+    for i in result:
+        sql = 'update '+table+' set brand=%s where sku=%s'
+        sku = i[0]
+        data = ['360',sku]
+        database_util.update_sql(sql,data)
+        print (i[0])
+
 
 if __name__ == '__main__':
     table = 'cellphone'
-    update_img(table)
+    # update_score('cj', table)

@@ -30,8 +30,9 @@ class MyThread(threading.Thread):
         elif self.work[0] == 'get_shop_id':
             get_shop_id(self.name, self.queue,self.work[1])
         elif self.work[0] == 'get_comment':
-            # get_comment(self.queue, self.work[1],self.work[2],'get_comment')
             get_comment(self.queue, self.work[1],self.work[2])
+        elif self.work[0] == 'update_score':
+            update_score(self.name,self.queue, self.work[1],self.work[2])
         print("Exiting " + self.name)
 
 def fill_queue(work_list):
@@ -91,11 +92,11 @@ def update_shop_info(thread_name, queue, table):
                 else:
                     pass
                 if result[0] != -1:
-                    follow_count = result[1]
+                    follow = result[1]
                     shop_name = result[2]
-                    print("%s: %s %d " % (thread_name,shop_name,follow_count))
-                    sql = 'update ' + table + ' set update_shop_time=%s,follow_count=%s,shop_name=%s where shop_id=%s '
-                    data = [datetime.datetime.now(),follow_count,shop_name, shop_id]
+                    print("%s: %s %d " % (thread_name,shop_name,follow))
+                    sql = 'update ' + table + ' set update_shop_time=%s,follow=%s,shop_name=%s where shop_id=%s '
+                    data = [datetime.datetime.now(),follow,shop_name, shop_id]
                     database_util.update_sql(sql, data)
             except Exception as err:
                 print('thread_queue update_shop_info err:'+str(err))
@@ -150,6 +151,40 @@ def get_comment(queue, table,page_no):
             QUEUE_LOCK.release()
         time.sleep(1)
 
+def update_score(thread_name,queue,table,para):
+    while not EXIT_FLAG:
+        QUEUE_LOCK.acquire()
+        if not WORK_QUEUE.empty():
+            try:
+                sku = queue.get()
+                QUEUE_LOCK.release()
+                w_rate = para['w_rate']
+                w_follow = para['w_follow']
+                w_comment = para['w_comment']
+                w_sentiment = para['w_sentiment']
+                w_brand = para['w_brand']
+
+                sql = 'select sku,rate,follow,comment,sentiment,brand_hot from ' + table+' where sku=%s'
+                result = database_util.search_sql(sql, sku)
+                if result[0] != -1:
+                    result = list(result[1])
+                    for i in result:
+                        sku = i[0]
+                        rate = float(i[1]) * 100
+                        follow = int(i[2])
+                        comment = int(i[3])
+                        sentiment = int(i[4])
+                        brand_hot = int(i[5])
+                        score = round((rate * w_rate + follow * w_follow + comment * w_comment + sentiment * w_sentiment + brand_hot* w_brand), 2)
+                        sql = 'update ' + table + ' set score=%s where sku=%s'
+                        data = [score, sku]
+                        database_util.update_sql(sql, data)
+
+            except Exception as err:
+                print('thread_queue update_score err:' + str(err))
+        else:
+            QUEUE_LOCK.release()
+        time.sleep(1)
 
 
 def use_threading(work):
