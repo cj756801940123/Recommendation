@@ -121,6 +121,21 @@ def del_unreal_comment(thread_name, queue,table):
                 useful_file = DATA_PATH + table+'/useful_comments/'+ sku_name
                 print(thread_name, sku_name)
                 unreal = []
+                try:
+                    fout = open(unreal_file, 'a', encoding='utf-8')
+                    fin = open(useful_file, 'r', encoding='utf-8')
+                    for line in fin:
+                        if line.find('宝贝')>=0:
+                            fout.write('0 '+line)
+                            print('0 '+line)
+                            unreal.append(line)
+                finally:
+                    fin.close()
+                    fout.close()
+
+                if len(unreal) <= 0:
+                    os.remove(unreal_file)
+
                 if os.path.exists(unreal_file):
                     file = open(unreal_file, 'r', encoding='utf-8')
                     for line in file:

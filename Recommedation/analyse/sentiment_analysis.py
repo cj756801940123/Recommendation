@@ -21,7 +21,7 @@ def get_unreal_comment(table):
     thread_queue.fill_queue(sku_list)
     thread_queue.use_threading(['get_unreal_comment',table])
 
-#把useful文件里面
+#把useful文件里面的刷单评价删掉
 def del_unreal_comment(table):
     sql = 'select sku from ' + table + ' where update_unreal_time is not null'
     result = database_util.search_sql(sql, None)
@@ -49,6 +49,6 @@ def get_sentiment_score(table):
 if __name__ == '__main__':
     table = 'cellphone'
     # get_unreal_comment(table)
-    # del_unreal_comment(table)
-    get_sentiment_score(table)
+    del_unreal_comment(table)
+    # get_sentiment_score(table)
 

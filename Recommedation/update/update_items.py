@@ -122,7 +122,7 @@ def update_score(table):
 
 if __name__ == '__main__':
     table = 'cellphone'
-    # update_price(table)
+    update_price(table)
     # get_shop_id(table)
-    update_shop_info(table)
+    # update_shop_info(table)
     # update_score(table)
