@@ -74,6 +74,7 @@ def use_threading(work):
     for t in threads:
         t.join()
     print("Exiting Main Thread")
+    EXIT_FLAG = 0
 
 #获取商品url，放进数据库
 def insert_url(thread_name, queue,table):
@@ -144,6 +145,7 @@ def get_param(thread_name, queue, table):
                     _item.price = result[1]
                 _item.price_times = 1
 
+                print(thread_name,url)
                 sql = 'update ' + table + ' set description=%s,price=%s,img=%s,brand=%s,name=%s,update_time=%s,' \
                       'comment=%s,rate=%s,max_price=%s,min_price=%s,avg_price=%s,price_times=%s,update_price_time=%s,update_rate_time=%s where sku=%s '
                 data = [_item.description, _item.price, _item.img, _item.brand, _item.name, _item.update_time,
@@ -164,8 +166,8 @@ def get_comment(queue, table,page_no):
                 QUEUE_LOCK.release()
                 _spider = jd_spider.Spider()
                 result = _spider.get_comment(table,sku,page_no)
-                if result[0] != -1:
-                    result = _spider.get_after_comment(table,sku,page_no)
+                # if result[0] != -1:
+                #     result = _spider.get_after_comment(table,sku,page_no)
                 if result[0] != -1:
                     sql = 'update ' + table + ' set update_comment_time=%s where sku=%s '
                     data = [datetime.datetime.now(),sku]

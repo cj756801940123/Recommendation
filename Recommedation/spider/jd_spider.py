@@ -141,7 +141,7 @@ class Spider():
                         if score <=2:
                             if len(c_content)>=10 and len(c_content)<=35:
                                 neg_file.write(info+c_content + '\n')
-                        item_file.write(info+c_content + '\n')
+                        item_file.write(info+c_content.strip('\n') + '\n')
                     data['page'] += 1
                     page = data['page']
                     print('comment sku %s, comment page: %s'%(sku,str(page)))

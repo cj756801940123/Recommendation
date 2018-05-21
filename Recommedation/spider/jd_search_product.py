@@ -8,7 +8,7 @@ from Recommedation.update import thread_queue
 from Recommedation.update import update_items
 import os
 
-#第一步获取商品的url，以便接下来进行处理
+#第一步：获取商品的url，以便接下来进行处理
 def get_url(url,table):
     _spider = jd_spider.Spider()
     html_data = _spider.get_html(url)
@@ -26,7 +26,7 @@ def get_url(url,table):
         thread_queue.fill_queue(url_list)
     thread_queue.use_threading(['insert_url', table])
 
-#第二步把url中的sku获取出来
+#第二步：把url中的sku获取出来
 def get_sku(table):
     sql = 'select url,id from ' + table
     result = database_util.search_sql(sql, None)
@@ -38,11 +38,11 @@ def get_sku(table):
             sql = 'update ' + table + ' set sku=%s where id=%s'
             database_util.update_sql(sql, [sku, id])
 
-#第三步获取商店的id
+#第三步：获取商店的id
 def get_shop_id(table):
     update_items.get_shop_id(table)
 
-#第四步获取商店的信息
+#第四步：获取商店的信息
 def get_shop_info():
     sql = 'SELECT shop_id FROM shop where update_time is null';
     result = database_util.search_sql(sql, None)
@@ -57,21 +57,23 @@ def get_shop_info():
     thread_queue.fill_queue(shop_id)
     thread_queue.use_threading(['update_shop_info',table])
 
-#把店铺关注人数少的商品删掉
-def del_url(table):
+#第五步：爬取商品信息
+def get_param(table):
+    # 把店铺关注人数少的商品删掉
     sql = 'delete from '+table+' where sku in (select a.sku from (select a.sku from '+table+' a,shop b where a.shop_id=b.shop_id and b.follow<10000) a)'
     database_util.update_sql(sql,None)
 
-#爬取商品信息
-def get_param(table):
     sql = 'SELECT url FROM '+table+' where update_time is null';
     result = list(database_util.search_sql(sql, None)[1])
-    # result = [('https://item.jd.com/4335139.html',)]
     url_list = []
     for i in result:
         url_list.append(i[0])
     thread_queue.fill_queue(url_list)
     thread_queue.use_threading(['get_param',table])
+
+
+def get_comment(table):
+    update_items.get_comment(table)
 
 if __name__ == '__main__':
     file_path = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("jd_search_product.py")))) + '/data/').replace('\\', '/')
@@ -83,7 +85,8 @@ if __name__ == '__main__':
     # get_shop_id(table)
     # get_shop_info()
     # del_url(table)
-    get_param(table)
+    # get_param(table)
+    get_comment(table)
 
 
 

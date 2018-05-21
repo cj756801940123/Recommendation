@@ -56,16 +56,28 @@ def get_unreal_comment(thread_name, queue,table):
                 comments = []
                 comments_hash = []
                 unreal_comments = []
+                baby_comments = []
                 for each_line in fin:
                     index = each_line.find(' comment:')
                     comment = each_line[index + 9:].strip('\n')
                     line = re.sub("[0-9a-zA-Z\s+\.\!\/_,$%^*()?;；【】+\"\']+|[+——！，;。？、~@#￥%……&*（）]+", ",", comment)
                     s = SnowNLP(line)
                     score = s.sentiments
-                    if len(line) >= 30 and score >= 0.9:
-                        # print(score,line)
+                    if len(line)>=20 and score>=0.95 and line.find('宝贝')>0:
+                        print(line)
+                        baby_comments.append(each_line)
+                        continue
+
+                    if len(line) >= 20 and score >= 0.9:
+                        # print(line)
                         comments.append(each_line.strip('\n'))
                         comments_hash.append(similarity_util.cal_simhash(line))
+
+                if len(baby_comments)>0:
+                    fout = open(DATA_PATH + table + '/unreal_comments/' + sku_name, 'w', encoding='utf-8')  # 以读的方式打开文件
+                    for i in baby_comments:
+                        fout.write('9'+' '+i)#9开头的就是有宝贝的评价
+                    fout.close()
 
                 num = len(comments_hash)
                 solved = []
@@ -77,12 +89,6 @@ def get_unreal_comment(thread_name, queue,table):
                     for j in range(i + 1, num):
                         sim = similarity_util.hammingDis(comments_hash[i],comments_hash[j])
                         if(sim<=5):
-                            index = comments[i].find(' comment:')
-                            info1 = comments[i][0:index + 9]
-                            index = comments[j].find(' comment:')
-                            info2 = comments[j][0:index + 9]
-                            if info1==info2:
-                                continue
                             print(thread_name,str(sim))
                             print(thread_name,comments[i])
                             print(thread_name,comments[j])
@@ -93,7 +99,7 @@ def get_unreal_comment(thread_name, queue,table):
                             solved[j]=1
 
                 if len(unreal_comments)>0:
-                    fout = open(DATA_PATH + table + '/unreal_comments/' + sku_name, 'w', encoding='utf-8')  # 以读的方式打开文件
+                    fout = open(DATA_PATH + table + '/unreal_comments/' + sku_name, 'a', encoding='utf-8')  # 以读的方式打开文件
                     for i in unreal_comments:
                         fout.write(i+'\n')
                     fout.close()
@@ -121,21 +127,6 @@ def del_unreal_comment(thread_name, queue,table):
                 useful_file = DATA_PATH + table+'/useful_comments/'+ sku_name
                 print(thread_name, sku_name)
                 unreal = []
-                try:
-                    fout = open(unreal_file, 'a', encoding='utf-8')
-                    fin = open(useful_file, 'r', encoding='utf-8')
-                    for line in fin:
-                        if line.find('宝贝')>=0:
-                            fout.write('0 '+line)
-                            print('0 '+line)
-                            unreal.append(line)
-                finally:
-                    fin.close()
-                    fout.close()
-
-                if len(unreal) <= 0:
-                    os.remove(unreal_file)
-
                 if os.path.exists(unreal_file):
                     file = open(unreal_file, 'r', encoding='utf-8')
                     for line in file:
@@ -161,7 +152,6 @@ def del_unreal_comment(thread_name, queue,table):
         else:
             QUEUE_LOCK.release()
         time.sleep(1)
-
 
 def get_sentiment_score(thread_name, queue,table):
     while not EXIT_FLAG:
@@ -207,10 +197,9 @@ def get_sentiment_score(thread_name, queue,table):
             QUEUE_LOCK.release()
         time.sleep(1)
 
-
 def use_threading(work):
     global EXIT_FLAG
-    THREAD_LIST = ["Thread-1", "Thread-2", "Thread-3","Thread-4","Thread-5"]
+    THREAD_LIST = ["Thread-1", "Thread-2", "Thread-3","Thread-4"]
     threads = []
     threadID = 1
 
@@ -232,6 +221,7 @@ def use_threading(work):
     for t in threads:
         t.join()
     print("Exiting Main Thread")
+    EXIT_FLAG = 0
 
 if __name__ == '__main__':
     pass

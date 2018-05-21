@@ -10,21 +10,37 @@ from gensim import corpora, models, similarities
 FILE_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py")))) + '/data/').replace('\\', '/')
 DATA_PATH = (os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath("database_util.py"))))) + '/RecommendData/').replace('\\', '/')
 
-#获取用户评论中的TopK个关键字
-def topK_words(topK):
-    content = open(FILE_PATH + "solved_comments/some_comments.txt", 'rb').read()
+#d第一步：获取用户评论中的TopK个关键字
+def topK_words(table,topK):
+    try:
+        fin = open(DATA_PATH + table+"/big_files/positive.txt", 'r', encoding='utf-8')
+        fout = open(DATA_PATH + table+ "/big_files/comments.txt", 'w', encoding='utf-8')
+        for line in fin:
+            index = line.find('comment:')
+            comment = line[index+8:].strip('\n')
+            fout.write(comment+',')
+    except Exception as err:
+        print(err)
+    finally:
+        fin.close()
+        fout.close()
+
+    del_stopwords(DATA_PATH + table+ "/big_files/comments.txt",DATA_PATH + table+ "/big_files/cut_comments.txt")
+    os.remove(DATA_PATH + table+ "/big_files/comments.txt")
+    content = open(DATA_PATH + table+ "/big_files/cut_comments.txt", 'rb').read()
     tags = jieba.analyse.textrank(content, topK=topK,withWeight=False, allowPOS=('n', 'np','vn'))
-    fout = open(FILE_PATH + "topK_words_temp.txt", 'w', encoding='utf-8')  # 以写的方式打开文件
+    print(tags)
+    fout = open(FILE_PATH + "procedure_files/"+table+"_topK_words.txt", 'w', encoding='utf-8')  # 以写的方式打开文件
     for word  in tags:
         fout.write(word+ '\n')  # 将结果写入到输出文件
     return tags
 
-#根据topK words 找出跟这些词最接近的词汇
-def get_similar_words(FILE_PATH):
-    sentences=word2vec.Text8Corpus(FILE_PATH+"solved_comments/del_stop_words.txt")
-    model=word2vec.Word2Vec(sentences, size=100)
-    fin = open(FILE_PATH + 'procedure_files/topK_words.txt', 'r', encoding='utf-8')  # 以读的方式打开文件
-    fout = open(FILE_PATH + 'procedure_files/attribute_words.txt', 'w', encoding='utf-8')  # 以写的方式打开文件
+#第二步：根据topK words 找出跟这些词最接近的词汇
+def get_similar_words(table):
+    sentences = word2vec.Text8Corpus(DATA_PATH + table+ "/big_files/cut_comments.txt")
+    model = word2vec.Word2Vec(sentences, size=100)
+    fin = open(FILE_PATH + 'procedure_files/'+table+'_topK_words.txt', 'r', encoding='utf-8')  # 以读的方式打开文件
+    fout = open(FILE_PATH + 'procedure_files/'+table+'_attributes.txt', 'w', encoding='utf-8')  # 以写的方式打开文件
     for eachLine in fin:
         word = eachLine.strip()
         print('\n'+word + ':')
@@ -34,6 +50,7 @@ def get_similar_words(FILE_PATH):
             words.append(i[0])
         fout.write(','.join(words)+ '\n')
     fin.close()
+    os.remove(FILE_PATH + 'procedure_files/'+table+'_topK_words.txt')
 
 #去停用词
 def del_stopwords(in_file, out_file):
@@ -58,27 +75,8 @@ def del_stopwords(in_file, out_file):
     fin.close()
     fout.close()
 
-#优化jieba的分词
-def update_words():
-    # jieba.load_userdict(FILE_PATH+'item_comments/stanford_cut_words.txt')
-    jieba.suggest_freq(('很', '漂亮'), True)
-    jieba.suggest_freq('杠杠的', True)
-    jieba.suggest_freq('全面屏', True)
-
-
-def get_comment_similarity(content1,content2,topK):
-    tags1 = jieba.analyse.textrank(content1, topK=topK, withWeight=False)
-    tags2 = jieba.analyse.textrank(content2, topK=topK, withWeight=False)
-    print(tags1)
-    print(tags2)
-
 if __name__ == '__main__':
-    get_similar_words()
-    #update_words(filePath)
-    # standford_cut_words(filePath)
-    # cut_file(FILE_PATH+"solved_comments/solved_comments.txt", FILE_PATH+"solved_comments/some_comments.txt")
-    # topKWords = topK_words(FILE_PATH, 50)
-    # del_stopwords(FILE_PATH, FILE_PATH+"solved_comments/cut_stop_words.txt", FILE_PATH+"solved_comments/del_stop_words.txt")
-    # get_similar_words(FILE_PATH)
-    # get_comment_similarity(content1, content2, 10)
+    table = 'computer'
+    topK_words(table,50)
+    get_similar_words(table)
 

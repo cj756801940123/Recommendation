@@ -19,6 +19,3 @@ class Item(object):
         self.avg_price = 0
         self.price_times = 0
 
-def getItem():
-    item = Item()
-    return item
