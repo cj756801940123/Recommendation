@@ -49,6 +49,6 @@ def get_sentiment_score(table):
 if __name__ == '__main__':
     table = 'cellphone'
     # get_unreal_comment(table)
-    del_unreal_comment(table)
-    # get_sentiment_score(table)
+    # del_unreal_comment(table)
+    get_sentiment_score(table)
 

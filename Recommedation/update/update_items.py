@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 import os
-
 from Recommedation.common import database_util
 from Recommedation.update import thread_queue
 
@@ -27,17 +26,13 @@ def update_price(table):
     thread_queue.use_threading(['update_price',table])
 
 def update_shop_info(table):
-    sql = 'SELECT shop_id FROM '+table+ ' where TO_DAYS(NOW()) - TO_DAYS(update_shop_time) >=1';
+    sql = 'SELECT shop_id FROM shop where TO_DAYS(NOW()) - TO_DAYS(update_time) >=1';
     result = database_util.search_sql(sql, None)
     shop_id = []
     if result[0]!=-1:
         id = list(result[1])
         for i in id:
-            if i[0] is not None:
-                # print(i[0])
-                shop_id.append(i[0])
-            else:
-                print("shop_id is null")
+            shop_id.append(i[0])
     thread_queue.fill_queue(shop_id)
     thread_queue.use_threading(['update_shop_info',table])
 
@@ -82,47 +77,11 @@ def get_comment(table):
     #第三个参数是要获取多少页的评论数据
     thread_queue.use_threading(['get_comment',table,100])
 
-def update_score(table):
-    sql = 'select * from weight'
-    result = database_util.search_sql(sql, None)
-    para = {}
-    if result[0] != -1:
-        result = list(result[1])
-        for i in result:
-            sum = i[1] + i[2] + i[3] + i[4] + i[5]
-            para['w_rate'] = float(i[1]) / sum
-            para['w_follow'] = float(i[2]) / sum
-            para['w_comment'] = float(i[3]) / sum
-            para['w_sentiment'] = float(i[4]) / sum
-            para['w_brand'] = float(i[5]) / sum
-
-    sql = 'select follow from ' + table + ' order by follow desc limit 1'
-    result = database_util.search_sql(sql, None)
-    if result[0] != -1:
-        result = list(result[1])
-        para['w_follow'] = para['w_follow']*100.0/result[0][0]
-        para['w_brand'] = para['w_brand'] * 100.0 / result[0][0]
-
-    sql = 'select comment from ' + table + ' order by comment desc limit 1'
-    result = database_util.search_sql(sql, None)
-    if result[0] != -1:
-        result = list(result[1])
-        para['w_comment'] = para['w_comment']*100.0/result[0][0]
-
-    sql = 'select sku from ' + table
-    result = database_util.search_sql(sql, None)
-    if result[0] != -1:
-        result = list(result[1])
-        sku_list = []
-        for i in result:
-            sku_list.append(i[0])
-        thread_queue.fill_queue(sku_list)
-        thread_queue.use_threading(['update_score',table,para])
-
-
 if __name__ == '__main__':
     table = 'cellphone'
-    update_price(table)
+    # update_price(table)
     # get_shop_id(table)
     # update_shop_info(table)
     # update_score(table)
+    table = 'computer'
+    get_shop_id(table)

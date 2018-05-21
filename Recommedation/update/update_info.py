@@ -53,7 +53,16 @@ def unify_brand(table):
         database_util.update_sql(sql,data)
         print (i[0])
 
+def temp(table):
+    sql = 'select shop_id from computer where shop_id is not null'
+    result = list(database_util.search_sql(sql,None))[1]
+    for i in result:
+        shop_id = i[0]
+        count = list(database_util.search_sql('select count(*) from shop where shop_id=%s', shop_id)[1])[0][0]
+        if count == 0:
+            database_util.update_sql('insert into shop(shop_id) values(%s)', shop_id)
 
 if __name__ == '__main__':
-    table = 'cellphone'
+    table = 'computer'
+    temp(table)
     # update_score('cj', table)

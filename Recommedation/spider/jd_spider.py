@@ -7,6 +7,7 @@ import requests
 import urllib
 import urllib.request
 from Recommedation.spider import proxy_ip
+from Recommedation.spider import html_analysis
 import chardet
 import jieba
 import random
@@ -42,7 +43,7 @@ class Spider():
                 print("get_html err: "+url+" "+str(err))
                 time.sleep(2)
                 continue
-        return -1, str(err)
+        return -1, 'fail'
 
     # 获取商品的价格
     def get_price(self, sku):
@@ -63,7 +64,7 @@ class Spider():
                 continue
         return -1,'fail'
 
-    def get_rate(self, file_path, sku):
+    def get_rate(self,sku,item):
         s = requests.session()
         url = 'https://club.jd.com/comment/productPageComments.action'
         data = {
@@ -76,8 +77,6 @@ class Spider():
             'isShadowSku': 0,
             'fold': 1
         }
-        sku_file = codecs.open(file_path + 'procedure_files/sloved_skus.txt', 'a', encoding='utf-8')
-        rate_file = codecs.open(file_path + 'procedure_files/rate.txt', 'a', encoding='utf-8')
         try:
             t = s.get(url, params=data).text
             try:
@@ -86,27 +85,15 @@ class Spider():
             except Exception as e:
                 print("no more page:" + str(e))
             j = json.loads(t)
-            # print(j)
             comment_summary = j['productCommentSummary']
             good_rate = float(comment_summary['goodRate'])
             poor_rate = float(comment_summary['poorRate'])
-            comment_count = int(comment_summary['commentCount'])
-            list = []
-            list.append(sku)
-            list.append(good_rate)
-            list.append(poor_rate)
-            list.append(comment_count)
-            list = str(list)
-            print(list)
-            rate_file.write(list + '\n')
-            sku_file.write(sku + '\n')
+            item.rate =  good_rate - poor_rate
+            item.comment = int(comment_summary['commentCount'])
         except Exception as e:
             print(e)
-            return -1
         finally:
-            sku_file.close()
-            rate_file.close()
-            return 1
+            return item
 
     #获取每个商品的评论
     def get_comment(self,table,sku,page_no):
@@ -249,6 +236,10 @@ if __name__== '__main__':
     _spider = Spider()
     # spider.get_rate(FILE_PATH, '14102602376')
     # result = _spider.get_price('5706773')
-    result = _spider.get_html('https://item.m.jd.com/product/20609148872.html ')
+    # result = _spider.get_html('https://item.m.jd.com/product/20609148872.html ')
+    html_data = _spider.get_html('https://item.m.jd.com/product/5225342.html')
+    if html_data[0] != -1:
+        result = html_analysis.get_shop_id(html_data[1])
+        print(result)
     #  https://item.jd.com/5716985.html
     print(result[0],result[1])

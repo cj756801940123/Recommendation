@@ -13,22 +13,24 @@ def get_page_count(html_data):
 
 # 根据首页获取每个具体商品的URL，用于后面对每个具体商品的搜索
 def get_items_url(html_data):
-    soup = bs(html_data, 'html.parser')
-    list = []
-    products = soup.find_all('div' ,class_='p-name')
-    products2 = soup.find_all('div', class_='p-name p-name-type-2')
-
-    for tag in products:
-        if tag.a.get('href')[0 ] =='h':
-            list.append(tag.a.get('href'))
-        else:
-            list.append('https:' + tag.a.get('href'))
-    for tag in products2:
-        if tag.a.get('href')[0] == 'h':
-            list.append(tag.a.get('href'))
-        else:
-            list.append('https:' + tag.a.get('href'))
-    return list
+    try:
+        soup = bs(html_data, 'html.parser')
+        list = []
+        products = soup.find_all('div' ,class_='p-name')
+        products2 = soup.find_all('div', class_='p-name p-name-type-2')
+        for tag in products:
+            if tag.a.get('href')[0 ] =='h':
+                list.append(tag.a.get('href'))
+            else:
+                list.append('https:' + tag.a.get('href'))
+        for tag in products2:
+            if tag.a.get('href')[0] == 'h':
+                list.append(tag.a.get('href'))
+            else:
+                list.append('https:' + tag.a.get('href'))
+        return list
+    except Exception as err:
+        print('html_analysis get_items_url err:'+str(err))
 
 # 区分是否属于全球购
 def is_global(soup):
@@ -43,7 +45,7 @@ def is_global(soup):
         return 0
 
 # 全球购获取商品详细信息
-def get_parameters_global(soup,item):
+def get_param_global(soup,item):
     div = soup.find('div',class_ ="p-parameter")
     li = div.find('ul',class_="parameter2").find_all('li')
     for i in li:
@@ -54,28 +56,13 @@ def get_parameters_global(soup,item):
         if kind.find('名字') >= 0 or kind.find('名称') >= 0:
             item.name = value
             continue
-        if kind.find('编号')>=0:
-            item.number = value
-            continue
-        if kind.find('分类') >= 0:
-            item.category = value
-            continue
         if kind.find('品牌') >= 0:
             item.brand = value
-            continue
-        if kind.find('系统') >=0:
-            item.operating_system = value
-            continue
-        if kind.find('运行内存') >= 0:
-            item.ram = value
-            continue
-        if kind.find('机身内存') >=0:
-            item.rom = value
             continue
     return item
 
 # 获取商品详细信息
-def get_parameters(soup,item):
+def get_param(soup,item):
     div = soup.find('div',class_ ="p-parameter")
     li = div.find('ul', id="parameter-brand",class_="p-parameter-list").li
     item.brand = li.a.get_text()
@@ -84,27 +71,12 @@ def get_parameters(soup,item):
         kind = i.get_text().split('：')[0]
         value = i.get_text().split('：')[1]
         value = value.strip("'")
-        value = value.strip("'")
+        # value = value.strip("'")
         if kind.find('名字') >= 0 or kind.find('名称') >= 0:
             item.name = value
             continue
-        if kind.find('编号')>=0:
-            item.number = value
-            continue
-        if kind.find('分类') >= 0:
-            item.category = value
-            continue
         if kind.find('品牌') >= 0:
             item.brand = value
-            continue
-        if kind.find('系统') >=0:
-            item.operating_system = value
-            continue
-        if kind.find('运行内存') >= 0:
-            item.ram = value
-            continue
-        if kind.find('机身内存') >=0:
-            item.rom = value
             continue
 
     #获取商品的标题
@@ -124,18 +96,20 @@ def get_parameters(soup,item):
 
     #获取商品图片的链接
     images = soup.find('div', id="spec-list", class_="spec-items").ul.find_all('li')
-    item.img_address = 'https:' + str(images[0].img.get('src'))
+    img = 'https:' + str(images[0].img.get('src'))
+    item.img = img.replace('n5/s54x54_jfs', 'n7/jfs')
     return item
 
 # 获取商品的各种信息，用它来调用其它的方法
-def get_all_parameters(html_data,item):
+def get_all_param(html_data,item):
     soup = bs(html_data, 'html.parser')
     if is_global(soup):
-        item = get_parameters_global(soup, item)
+        item = get_param_global(soup, item)
     else:
-        item = get_parameters(soup, item)
-    item.address = 'https://item.jd.com/'+item.number+'.html'
-    item.get_time = datetime.datetime.now()
+        item = get_param(soup, item)
+    item.update_time = datetime.datetime.now()
+    item.update_price_time = datetime.datetime.now()
+    item.update_rate_time = datetime.datetime.now()
     return item
 
 # 获取店铺id
@@ -150,13 +124,23 @@ def get_shop_id(html_data):
             if found==1:
                 break
             index = temp.find('shopId')
+            index2 = 0
             if index>=0:
                 for j in range(index,index+20):
                     if temp[j]==',':
                         index2 = j
-                        found = 1
                         break
                 shop_id = temp[index+8:index2]
+                return 0, shop_id
+            index = temp.find('venderID')
+
+            if index>=0:
+                for j in range(index+8,index+30):
+                    if temp[j]==',':
+                        index2 = j
+                        break
+                shop_id = temp[index+11:index2-1]
+                return 0, shop_id
         if len(shop_id)==0:
             return -1,'fail'
         return 0,shop_id
